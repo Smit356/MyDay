@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MomentumFlow - Daily Routine Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* CSS for MomentumFlow */
+        :root {
+            /* New Color Palette */
+            --primary-background: #FBFBFB; /* Soft White */
+            --primary-accent: #007AFF;    /* Sky Blue */
+            --secondary-accent: #FF9500;  /* Warm Orange */
+            --highlight-color: #34C759;   /* Success Green */
+
+            --text-primary: #2C2C2E;      /* Dark Charcoal */
+            --text-secondary: #8E8E93;    /* Medium Gray */
+
+            /* Derived Colors (adjust as needed based on new palette) */
+            --card-background: #FFFFFF; /* Pure White for cards on soft background */
+            --border-color: #E0E0E0;    /* A light gray for borders */
+            --completed-task-bg: #E7F7E9; /* Very light green for completed tasks */
+            --completed-task-text: #288C43; /* Darker green for completed text */
+            --current-hour-bg: #F0FFF2; /* Very light green tint for current hour */
+
+            /* Dark Mode */
+            --dark-primary-color: #0A84FF; /* Ocean Blue */
+            --dark-secondary-color: #FFBB33; /* Muted Orange for dark mode */
+            --dark-text-color: #E5E5EA; /* Light Gray for text */
+            --dark-background-color: #1C1C1E; /* Deep Slate background */
+            --dark-card-background: #2C2C2E; /* Dark Charcoal for cards */
+            --dark-border-color: #4A4A4F; /* Darker border */
+            --dark-completed-task-bg: #2A3B2B; /* Darker muted green */
+            --dark-completed-task-text: #9CDD9C; /* Lighter green for completed text */
+            --dark-current-hour-bg: #323D32; /* Darker subtle green for current hour */
+        }
+
+        /* Dark Mode Styles */
+        body.dark-mode {
+            --primary-background: var(--dark-background-color);
+            --primary-accent: var(--dark-primary-color);
+            --secondary-accent: var(--dark-secondary-color);
+            --highlight-color: var(--dark-highlight-color);
+
+            --text-primary: var(--dark-text-color);
+            --text-secondary: var(--dark-text-secondary);
+
+            --background-color: var(--dark-background-color);
+            --card-background: var(--dark-card-background);
+            --border-color: var(--dark-border-color);
+            --completed-task-bg: var(--dark-completed-task-bg);
+            --completed-task-text: var(--dark-completed-task-text);
+            --current-hour-bg: var(--dark-current-hour-bg);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--primary-background);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header / Navbar */
+        .header {
+            background-color: var(--card-background);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-accent);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header .logo i {
+            font-size: 1.5rem;
+        }
+
+        .header .nav-menu ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+        }
+
+        .header .nav-menu a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            padding: 5px 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .header .nav-menu a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: var(--primary-accent);
+            transition: width 0.3s ease;
+        }
+
+        .header .nav-menu a:hover::after,
+        .header .nav-menu a.active::after {
+            width: 100%;
+        }
+
+        .header .nav-menu a:hover,
+        .header .nav-menu a.active {
+            color: var(--primary-accent);
+        }
+
+        .header .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header .user-profile .avatar {
+            width: 35px;
+            height: 35px;
+            background-color: var(--primary-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .header .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        /* Mobile Navbar (Hamburger Menu) */
+        .hamburger-menu {
+            display: none; /* Hidden on desktop */
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .mobile-nav-drawer {
+            display: none; /* Hidden by default by JS, not flex initially */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-background);
+            z-index: 1050;
+            flex-direction: column;
+            padding-top: 60px;
+            transition: transform 0.3s ease-out;
+            transform: translateX(-100%); /* Start off-screen */
+        }
+
+        .mobile-nav-drawer.open {
+            transform: translateX(0); /* Slide in */
+            display: flex; /* Show when open */
+        }
+
+        .mobile-nav-drawer .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        .mobile-nav-drawer ul {
+            list-style: none;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .mobile-nav-drawer ul li {
+            margin-bottom: 25px;
+        }
+
+        .mobile-nav-drawer ul a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            font-weight: 500;
+            display: block;
+            padding: 10px 0;
+            transition: color 0.3s ease;
+        }
+
+        .mobile-nav-drawer ul a:hover,
+        .mobile-nav-drawer ul a.active {
+            color: var(--primary-accent);
+        }
+
+        /* Main Content Layout */
+        .main-content {
+            flex: 1; /* Allows main content to grow and push footer down */
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-background);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            /* Add hidden-view style */
+            display: none; /* Hidden by default, shown by JS */
+        }
+        .dashboard-header.hidden-view {
+            display: none;
+        }
+
+        .date-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+
+        .date-picker button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-accent);
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        .date-picker button.today-btn {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border: 1px solid var(--primary-accent);
+            border-radius: 6px;
+            font-weight: 600;
+            background-color: var(--primary-accent);
+            color: white;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .date-picker button.today-btn:hover {
+            background-color: #0062CC; /* Slightly darker blue on hover */
+            color: white;
+        }
+
+        .date-picker button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .view-selector button {
+            background-color: var(--primary-background);
+            border: 1px solid var(--border-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .view-selector button.active {
+            background-color: var(--primary-accent);
+            color: white;
+            border-color: var(--primary-accent);
+        }
+
+        .view-selector button:not(.active):hover {
+            background-color: var(--border-color);
+        }
+
+        /* Daily View Specifics */
+        .daily-view-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap; /* Allows columns to wrap on smaller screens */
+            flex: 1;
+        }
+        .hidden-view {
+            display: none;
+        }
+        .active-view {
+            display: flex; /* Or block, depending on layout */
+        }
+
+
+        .daily-timeline-column {
+            flex: 2.5; /* Takes more space */
+            min-width: 300px; /* Minimum width for the timeline */
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+
+        .notes-sidebar {
+            flex: 1; /* Takes less space */
+            min-width: 280px; /* Minimum width for notes */
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .timeline {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 10px;
+        }
+
+        .time-label {
+            grid-column: 1;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            text-align: right;
+            padding-top: 5px;
+        }
+
+        .time-slot {
+            grid-column: 2;
+            min-height: 50px;
+            border-left: 2px solid var(--border-color);
+            padding-left: 15px;
+            position: relative;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .time-slot.current-hour {
+            background-color: var(--current-hour-bg);
+            border-left-color: var(--highlight-color);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .time-slot:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background-color: var(--border-color);
+            border-radius: 50%;
+            border: 2px solid var(--card-background);
+        }
+        .time-slot.current-hour:not(:last-child)::after {
+            background-color: var(--highlight-color);
+        }
+
+        .task-block {
+            background-color: var(--primary-background);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .task-block.completed {
+            background-color: var(--completed-task-bg);
+            color: var(--completed-task-text);
+            text-decoration: line-through;
+            border-color: #A3D9D9; /* A light, muted green */
+        }
+
+        .task-block.completed .task-title {
+            color: var(--completed-task-text);
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .task-meta {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .task-tags span {
+            background-color: var(--primary-accent);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-right: 5px;
+        }
+
+        .task-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .task-block:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-actions button {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+        }
+        .task-actions button:hover {
+            color: var(--primary-accent);
+        }
+        .task-actions button.delete-btn:hover {
+            color: var(--secondary-accent);
+        }
+        .task-actions button.complete-btn:hover {
+            color: var(--highlight-color);
+        }
+
+        /* Notes Section */
+        .notes-sidebar h3 {
+            color: var(--primary-accent);
+            margin-bottom: 10px;
+        }
+
+        .notes-sidebar textarea {
+            width: 100%;
+            height: 150px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            background-color: var(--primary-background);
+            color: var(--text-primary);
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .notes-sidebar textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+        }
+
+        .notes-sidebar button {
+            background-color: var(--primary-accent);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .notes-sidebar button:hover {
+            background-color: #0062CC; /* Slightly darker blue on hover */
+        }
+
+        /* Floating Action Buttons */
+        .floating-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 900;
+        }
+
+        .floating-buttons button {
+            background-color: var(--secondary-accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease, background-color 0.3s ease;
+        }
+
+        .floating-buttons button:hover {
+            transform: translateY(-3px);
+            background-color: #E68A00; /* Slightly darker orange on hover */
+        }
+
+        /* Modals (Hidden by default) */
+        .modal-overlay {
+            display: none; /* Hidden by default, JS will set to flex */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: var(--card-background);
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            color: var(--text-primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-content .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .modal-content h2 {
+            color: var(--primary-accent);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .modal-content input[type="text"],
+        .modal-content input[type="time"],
+        .modal-content select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: var(--primary-background);
+            color: var(--text-primary);
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .modal-content input[type="text"]:focus,
+        .modal-content input[type="time"]:focus,
+        .modal-content select:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+        }
+
+        .modal-content .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-content .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-content .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-content .modal-buttons .cancel-btn {
+            background-color: #ccc;
+            color: var(--text-primary);
+        }
+        .modal-content .modal-buttons .cancel-btn:hover {
+            background-color: #bbb;
+        }
+
+        .modal-content .modal-buttons .save-btn {
+            background-color: var(--primary-accent);
+            color: white;
+        }
+        .modal-content .modal-buttons .save-btn:hover {
+            background-color: #0062CC; /* Slightly darker blue on hover */
+        }
+
+        /* Calendar View (Simplified for this example) */
+        .calendar-view-container {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            min-height: 400px;
+            text-align: center;
+        }
+        .calendar-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+        .calendar-nav button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-accent);
+            padding: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        .calendar-nav button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .calendar-grid .day-name {
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+        .calendar-grid .day-cell {
+            padding: 15px 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            position: relative;
+            min-height: 80px; /* Adjust for content */
+        }
+        .calendar-grid .day-cell:hover {
+            background-color: var(--primary-background);
+        }
+        .calendar-grid .day-cell.current-day {
+            background-color: var(--highlight-color);
+            color: var(--text-primary); /* Text on highlight can be primary text color */
+            border-color: var(--highlight-color);
+        }
+        .calendar-grid .day-cell.has-tasks {
+            background-color: var(--primary-accent);
+            color: white;
+            border-color: var(--primary-accent);
+        }
+        .calendar-grid .day-cell.has-tasks:hover {
+            background-color: #0062CC; /* Darker blue on hover */
+        }
+        .calendar-grid .day-number {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        .calendar-grid .task-summary {
+            font-size: 0.75rem;
+            line-height: 1.2;
+            color: rgba(255,255,255,0.8); /* Lighter text for contrasting background */
+            margin-top: 5px;
+        }
+        .calendar-grid .day-cell:not(.has-tasks) .task-summary {
+            color: var(--text-secondary);
+        }
+
+        /* Week View (Simplified for this example) */
+        .week-view-container {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .week-day-card {
+            background-color: var(--primary-background);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .week-day-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .week-day-card.current-day {
+            border-color: var(--highlight-color);
+            box-shadow: 0 0 0 2px var(--highlight-color);
+        }
+        .week-day-card h4 {
+            color: var(--primary-accent);
+            margin-bottom: 10px;
+        }
+        .week-day-card p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .week-day-card ul {
+            list-style: none;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        .week-day-card li {
+            margin-bottom: 3px;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Insights Section (Placeholder) */
+        .insights-container {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            min-height: 400px;
+            text-align: center;
+        }
+        .insights-container h2 {
+            color: var(--primary-accent);
+            margin-bottom: 20px;
+        }
+
+        /* Notes Section (Accessed via Navbar) */
+        .all-notes-container {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            min-height: 400px;
+        }
+        .all-notes-container h2 {
+            color: var(--primary-accent);
+            margin-bottom: 20px;
+        }
+        .note-item {
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background-color: var(--primary-background);
+        }
+        .note-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: var(--text-primary);
+        }
+        .note-item p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+        .note-item .note-date {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: right;
+        }
+        .note-editor-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .note-editor-section textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            background-color: var(--primary-background);
+            color: var(--text-primary);
+        }
+        .note-editor-section button {
+            background-color: var(--primary-accent);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .note-editor-section button:hover {
+            background-color: #0062CC; /* Slightly darker blue on hover */
+        }
+
+        /* Settings Section */
+        .settings-container {
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            min-height: 400px;
+        }
+        .settings-container h2 {
+            color: var(--primary-accent);
+            margin-bottom: 20px;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        .setting-item label {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        .setting-item select, .setting-item input[type="time"] {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--primary-background);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+        .setting-item button {
+            background-color: var(--secondary-accent);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        .setting-item button:hover {
+            background-color: #E68A00; /* Darker orange on hover */
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--card-background);
+            border-top: 1px solid var(--border-color);
+            padding: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: auto; /* Pushes footer to the bottom */
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.03);
+        }
+
+        .footer .footer-links a {
+            color: var(--primary-accent);
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.3s ease;
+        }
+        .footer .footer-links a:hover {
+            color: #0062CC; /* Darker blue on hover */
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header .nav-menu {
+                display: none; /* Hide desktop nav */
+            }
+            .header .hamburger-menu {
+                display: block; /* Show hamburger */
+            }
+            .header .user-profile {
+                gap: 10px;
+            }
+            .header .logo {
+                font-size: 1.5rem;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .view-selector {
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                gap: 10px;
+            }
+            .view-selector button {
+                flex: 1;
+            }
+
+            .daily-view-container {
+                flex-direction: column;
+            }
+            .daily-timeline-column, .notes-sidebar {
+                min-width: unset;
+                width: 100%;
+            }
+            .time-label {
+                padding-top: 0;
+                font-size: 0.8rem;
+            }
+            .time-slot {
+                min-height: 40px;
+                padding-left: 10px;
+            }
+            .time-slot:not(:last-child)::after {
+                left: -7px;
+                width: 10px;
+                height: 10px;
+            }
+            .task-actions {
+                opacity: 1; /* Always show actions on mobile for easier tap */
+                position: static;
+                margin-top: 5px;
+                justify-content: flex-end;
+            }
+            .task-block {
+                padding-right: 15px; /* Adjust padding due to static actions */
+            }
+
+            .floating-buttons {
+                bottom: 20px;
+                right: 20px;
+                gap: 10px;
+            }
+            .floating-buttons button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+            .modal-content h2 {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            .header {
+                padding: 10px 15px;
+            }
+            .header .logo {
+                font-size: 1.3rem;
+            }
+            .header .theme-toggle {
+                font-size: 1.2rem;
+            }
+            .hamburger-menu {
+                font-size: 1.5rem;
+            }
+
+            .dashboard-header {
+                padding: 10px 15px;
+            }
+            .date-picker {
+                font-size: 1rem;
+            }
+            .date-picker button {
+                font-size: 1.2rem;
+            }
+
+            .timeline {
+                grid-template-columns: 50px 1fr;
+            }
+            .time-label {
+                font-size: 0.75rem;
+            }
+            .time-slot {
+                padding-left: 8px;
+            }
+
+            .modal-content input[type="text"],
+            .modal-content input[type="time"],
+            .modal-content select,
+            .notes-sidebar textarea {
+                font-size: 0.9rem;
+            }
+            .modal-content .modal-buttons button {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <a href="#" class="logo" onclick="navigateTo('today')"><i class="fas fa-calendar-check"></i> MomentumFlow</a>
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#" onclick="navigateTo('today')" class="nav-link" id="nav-today">Today</a></li>
+                <li><a href="#" onclick="navigateTo('week')" class="nav-link" id="nav-week">Week</a></li>
+                <li><a href="#" onclick="navigateTo('calendar')" class="nav-link" id="nav-calendar">Calendar</a></li>
+                <li><a href="#" onclick="navigateTo('insights')" class="nav-link" id="nav-insights">Insights</a></li>
+                <li><a href="#" onclick="navigateTo('notes')" class="nav-link" id="nav-notes">Notes</a></li>
+                <li><a href="#" onclick="navigateTo('settings')" class="nav-link" id="nav-settings">Settings</a></li>
+            </ul>
+        </nav>
+        <div class="user-profile">
+            <button class="theme-toggle" id="themeToggle"><i class="fas fa-moon"></i></button>
+        </div>
+        <div class="hamburger-menu" id="hamburgerMenu"><i class="fas fa-bars"></i></div>
+    </header>
+
+    <div class="mobile-nav-drawer" id="mobileNavDrawer">
+        <button class="close-btn" id="closeNavDrawer">&times;</button>
+        <ul>
+            <li><a href="#" onclick="navigateTo('today'); closeMobileNav();" class="nav-link">Today</a></li>
+            <li><a href="#" onclick="navigateTo('week'); closeMobileNav();" class="nav-link">Week</a></li>
+            <li><a href="#" onclick="navigateTo('calendar'); closeMobileNav();" class="nav-link">Calendar</a></li>
+            <li><a href="#" onclick="navigateTo('insights'); closeMobileNav();" class="nav-link">Insights</a></li>
+            <li><a href="#" onclick="navigateTo('notes'); closeMobileNav();" class="nav-link">Notes</a></li>
+            <li><a href="#" onclick="navigateTo('settings'); closeMobileNav();" class="nav-link">Settings</a></li>
+        </ul>
+    </div>
+
+    <main class="main-content container">
+
+        <section class="dashboard-header" id="dashboardHeader">
+            <div class="date-picker">
+                <button id="prevDayBtn"><i class="fas fa-chevron-left"></i></button>
+                <span id="currentDateDisplay"></span>
+                <button id="nextDayBtn"><i class="fas fa-chevron-right"></i></button>
+                <button id="todayDateBtn" class="today-btn">Today</button>
+            </div>
+            <div class="view-selector">
+                <button id="dayViewBtn" class="active">Day</button>
+                <button id="weekViewBtn">Week</button>
+                <button id="calendarViewBtn">Calendar</button>
+            </div>
+        </section>
+
+        <section id="todayView" class="daily-view-container active-view">
+            <div class="daily-timeline-column">
+                <h3>Your Day: <span id="currentDayRoutineDate"></span></h3>
+                <div class="timeline" id="dailyTimeline">
+                    </div>
+            </div>
+            <div class="notes-sidebar">
+                <h3>Daily Notes & Reflections</h3>
+                <textarea id="dailyNotesTextarea" placeholder="What went well today? What could be improved?"></textarea>
+                <button id="saveDailyNotesBtn">Save Notes</button>
+            </div>
+        </section>
+
+        <section id="weekView" class="week-view-container hidden-view">
+            <h2>Weekly Overview</h2>
+            <div class="week-grid" id="weeklyOverviewGrid">
+                </div>
+        </section>
+
+        <section id="calendarView" class="calendar-view-container hidden-view">
+            <h2>Calendar</h2>
+            <div class="calendar-nav">
+                <button id="prevMonthBtn"><i class="fas fa-chevron-left"></i></button>
+                <span id="currentMonthYearDisplay"></span>
+                <button id="nextMonthBtn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid">
+                </div>
+        </section>
+
+        <section id="insightsView" class="insights-container hidden-view">
+            <h2>Insights & Statistics</h2>
+            <p>Coming soon: Visual charts, completion rates, streaks, and time breakdowns!</p>
+            </section>
+
+        <section id="notesView" class="all-notes-container hidden-view">
+            <h2>All Saved Notes</h2>
+            <div id="allNotesList">
+                </div>
+            <div class="note-editor-section">
+                <h3>Add New General Note</h3>
+                <textarea id="newGeneralNoteTextarea" placeholder="Type your general note here..."></textarea>
+                <button id="saveGeneralNoteBtn">Save General Note</button>
+            </div>
+        </section>
+
+        <section id="settingsView" class="settings-container hidden-view">
+            <h2>Settings</h2>
+            <div class="setting-item">
+                <label for="themeSelect">Theme</label>
+                <select id="themeSelect">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="defaultStartTime">Default Day Start Time</label>
+                <input type="time" id="defaultStartTime">
+            </div>
+            <div class="setting-item">
+                <label for="defaultEndTime">Default Day End Time</label>
+                <input type="time" id="defaultEndTime">
+            </div>
+            <div class="setting-item">
+                <label for="clearDataBtn">Clear All Data</label>
+                <button id="clearDataBtn">Reset App</button>
+            </div>
+        </section>
+
+    </main>
+
+    <div class="floating-buttons">
+        <button id="quickAddTaskBtn" title="Add New Task"><i class="fas fa-plus"></i></button>
+        <button id="quickAddTemplateBtn" title="Add from Template"><i class="fas fa-clipboard"></i></button>
+    </div>
+
+    <div id="taskModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="closeTaskModal">&times;</span>
+            <h2 id="taskModalTitle">Add New Task</h2>
+            <div class="form-group">
+                <label for="taskTitle">Task Title</label>
+                <input type="text" id="taskTitle" placeholder="e.g., Morning Run, Work on Project X" required>
+            </div>
+            <div class="form-group">
+                <label for="taskStartTime">Start Time</label>
+                <input type="time" id="taskStartTime" required>
+            </div>
+            <div class="form-group">
+                <label for="taskEndTime">End Time</label>
+                <input type="time" id="taskEndTime" required>
+            </div>
+            <div class="form-group">
+                <label for="taskTags">Tags (comma-separated)</label>
+                <input type="text" id="taskTags" placeholder="e.g., Work, Health, Study">
+            </div>
+            <div class="modal-buttons">
+                <button class="cancel-btn" id="cancelTaskModal">Cancel</button>
+                <button class="save-btn" id="saveTaskBtn">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="templateModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-btn" id="closeTemplateModal">&times;</span>
+            <h2>Add from Template</h2>
+            <div class="form-group">
+                <label for="templateSelect">Select a Template</label>
+                <select id="templateSelect">
+                    <option value="">-- Choose Template --</option>
+                    <option value="morningRoutine">Morning Routine</option>
+                    <option value="workdaySetup">Workday Setup</option>
+                    <option value="eveningWindDown">Evening Wind-Down</option>
+                    <option value="studySession">Study Session</option>
+                </select>
+            </div>
+            <div class="modal-buttons">
+                <button class="cancel-btn" id="cancelTemplateModal">Cancel</button>
+                <button class="save-btn" id="loadTemplateBtn">Load Template</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 MomentumFlow. All rights reserved.</p>
+        <div class="footer-links">
+            <a href="#">Help / FAQ</a>
+            <a href="#">Privacy Policy</a>
+            <a href="mailto:support@momentumflow.com">Contact Us</a>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript for MomentumFlow
+
+        // --- DOM Elements ---
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlBody = document.body;
+        const hamburgerMenu = document.getElementById('hamburgerMenu');
+        const mobileNavDrawer = document.getElementById('mobileNavDrawer');
+        const closeNavDrawerBtn = document.getElementById('closeNavDrawer');
+
+        const dashboardHeader = document.getElementById('dashboardHeader');
+        const currentDateDisplay = document.getElementById('currentDateDisplay');
+        const prevDayBtn = document.getElementById('prevDayBtn');
+        const nextDayBtn = document.getElementById('nextDayBtn');
+        const todayDateBtn = document.getElementById('todayDateBtn'); // New Today button
+        const dayViewBtn = document.getElementById('dayViewBtn');
+        const weekViewBtn = document.getElementById('weekViewBtn');
+        const calendarViewBtn = document.getElementById('calendarViewBtn');
+
+        const todayView = document.getElementById('todayView');
+        const currentDayRoutineDate = document.getElementById('currentDayRoutineDate');
+        const dailyTimeline = document.getElementById('dailyTimeline');
+        const dailyNotesTextarea = document.getElementById('dailyNotesTextarea');
+        const saveDailyNotesBtn = document.getElementById('saveDailyNotesBtn');
+
+        const weekView = document.getElementById('weekView');
+        const weeklyOverviewGrid = document.getElementById('weeklyOverviewGrid');
+
+        const calendarView = document.getElementById('calendarView');
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
+        const currentMonthYearDisplay = document.getElementById('currentMonthYearDisplay');
+        const calendarGrid = document.getElementById('calendarGrid');
+
+        const insightsView = document.getElementById('insightsView');
+        const notesView = document.getElementById('notesView');
+        const allNotesList = document.getElementById('allNotesList');
+        const newGeneralNoteTextarea = document.getElementById('newGeneralNoteTextarea');
+        const saveGeneralNoteBtn = document.getElementById('saveGeneralNoteBtn');
+
+        const settingsView = document.getElementById('settingsView');
+        const themeSelect = document.getElementById('themeSelect');
+        const defaultStartTimeInput = document.getElementById('defaultStartTime');
+        const defaultEndTimeInput = document.getElementById('defaultEndTime');
+        const clearDataBtn = document.getElementById('clearDataBtn');
+
+        const quickAddTaskBtn = document.getElementById('quickAddTaskBtn');
+        const quickAddTemplateBtn = document.getElementById('quickAddTemplateBtn');
+
+        const taskModalOverlay = document.getElementById('taskModalOverlay');
+        const closeTaskModalBtn = document.getElementById('closeTaskModal');
+        const cancelTaskModalBtn = document.getElementById('cancelTaskModal');
+        const saveTaskBtn = document.getElementById('saveTaskBtn');
+        const taskModalTitle = document.getElementById('taskModalTitle');
+        const taskTitleInput = document.getElementById('taskTitle');
+        const taskStartTimeInput = document.getElementById('taskStartTime');
+        const taskEndTimeInput = document.getElementById('taskEndTime');
+        const taskTagsInput = document.getElementById('taskTags');
+
+        const templateModalOverlay = document.getElementById('templateModalOverlay');
+        const closeTemplateModalBtn = document.getElementById('closeTemplateModal');
+        const cancelTemplateModalBtn = document.getElementById('cancelTemplateModal');
+        const loadTemplateBtn = document.getElementById('loadTemplateBtn');
+        const templateSelect = document.getElementById('templateSelect');
+
+        // --- State Variables ---
+        let currentSelectedDate = new Date(); // Stores the currently displayed date for Day View
+        let currentCalendarMonth = new Date(); // Stores the currently displayed month for Calendar View
+        let editingTask = null; // Stores the task object being edited, null if adding new
+
+        // --- Data Architecture (LocalStorage) ---
+        // Format:
+        // 'tasks-YYYY-MM-DD': [{ id: 'uuid', title: 'Task', startTime: 'HH:MM', endTime: 'HH:MM', tags: ['Work'], completed: false }]
+        // 'notes-YYYY-MM-DD': 'My daily notes...'
+        // 'general-notes': [{ id: 'uuid', date: 'YYYY-MM-DD', content: 'My general note' }]
+        // 'settings': { theme: 'light/dark', defaultStart: 'HH:MM', defaultEnd: 'HH:MM' }
+
+        const storageKeys = {
+            tasks: (date) => `tasks-${formatDate(date)}`,
+            notes: (date) => `notes-${formatDate(date)}`,
+            generalNotes: 'general-notes',
+            settings: 'settings'
+        };
+
+        // --- Utility Functions ---
+
+        // Date Formatting
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDisplayDate(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        function formatDisplayTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            const date = new Date();
+            date.setHours(parseInt(hours), parseInt(minutes));
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        // LocalStorage Helpers
+        function getData(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.error("Error reading from localStorage", e);
+                return null;
+            }
+        }
+
+        function saveData(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.error("Error writing to localStorage", e);
+            }
+        }
+
+        // --- App Settings Management ---
+        let appSettings = {
+            theme: 'light',
+            defaultStart: '08:00',
+            defaultEnd: '22:00'
+        };
+
+        function loadSettings() {
+            const storedSettings = getData(storageKeys.settings);
+            if (storedSettings) {
+                appSettings = { ...appSettings, ...storedSettings };
+            }
+            applyTheme(appSettings.theme);
+            themeSelect.value = appSettings.theme;
+            defaultStartTimeInput.value = appSettings.defaultStart;
+            defaultEndTimeInput.value = appSettings.defaultEnd;
+        }
+
+        function saveSettings() {
+            appSettings.theme = themeSelect.value;
+            appSettings.defaultStart = defaultStartTimeInput.value;
+            appSettings.defaultEnd = defaultEndTimeInput.value;
+            saveData(storageKeys.settings, appSettings);
+            applyTheme(appSettings.theme); // Apply theme immediately
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                htmlBody.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                htmlBody.classList.remove('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        }
+
+        // --- Navigation and View Management ---
+        const views = {
+            today: todayView,
+            week: weekView,
+            calendar: calendarView,
+            insights: insightsView,
+            notes: notesView,
+            settings: settingsView
+        };
+
+        const viewButtons = {
+            day: dayViewBtn,
+            week: weekViewBtn,
+            calendar: calendarViewBtn
+        };
+
+        function navigateTo(viewName) {
+            // Hide all views and ensure dashboard header is hidden by default
+            Object.values(views).forEach(view => {
+                view.classList.add('hidden-view');
+                view.style.display = 'none'; // Explicitly hide
+            });
+            dashboardHeader.classList.add('hidden-view');
+            dashboardHeader.style.display = 'none'; // Explicitly hide
+
+            // Show selected view
+            const targetView = views[viewName];
+            if (targetView) {
+                targetView.classList.remove('hidden-view');
+                // For daily view, it's a flex container, for others it might be block
+                if (viewName === 'today') {
+                    targetView.style.display = 'flex';
+                } else {
+                    targetView.style.display = 'block';
+                }
+            }
+
+            // Update active class in Navbar
+            document.querySelectorAll('.nav-menu .nav-link').forEach(link => link.classList.remove('active'));
+            document.querySelectorAll('.mobile-nav-drawer .nav-link').forEach(link => link.classList.remove('active'));
+
+            const activeNavLink = document.getElementById(`nav-${viewName}`);
+            if (activeNavLink) {
+                activeNavLink.classList.add('active');
+            }
+            // Also update active state for mobile nav
+            const mobileActiveLink = mobileNavDrawer.querySelector(`a[onclick*="navigateTo('${viewName}')"]`);
+            if(mobileActiveLink) mobileActiveLink.classList.add('active');
+
+
+            // Handle specific view rendering
+            if (['today', 'week', 'calendar'].includes(viewName)) {
+                dashboardHeader.classList.remove('hidden-view');
+                dashboardHeader.style.display = 'flex'; // Ensure it's flex for dashboard
+                // Update active state for view selector buttons
+                Object.values(viewButtons).forEach(btn => btn.classList.remove('active'));
+                viewButtons[viewName].classList.add('active');
+            }
+
+            if (viewName === 'today') {
+                renderDailyRoutine(currentSelectedDate);
+                loadDailyNotes(currentSelectedDate);
+            } else if (viewName === 'week') {
+                renderWeeklyOverview();
+            } else if (viewName === 'calendar') {
+                renderCalendar(currentCalendarMonth);
+            } else if (viewName === 'notes') {
+                renderAllNotes();
+            } else if (viewName === 'settings') {
+                loadSettings(); // Ensure settings are loaded when viewing the settings page
+            }
+            // insights view has simple placeholder for now, no complex rendering needed
+
+            // Scroll to the top of the window after navigating to a new section
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth' // For a smooth scrolling effect
+            });
+        }
+
+        function closeMobileNav() {
+            mobileNavDrawer.classList.remove('open');
+        }
+
+        // --- Daily Routine Functions ---
+
+        function getDailyTasks(date) {
+            return getData(storageKeys.tasks(date)) || [];
+        }
+
+        function saveDailyTasks(date, tasks) {
+            saveData(storageKeys.tasks(date), tasks);
+        }
+
+        function addOrUpdateTask(task) {
+            const tasks = getDailyTasks(currentSelectedDate);
+
+            if (task.id) {
+                // Update existing task
+                const index = tasks.findIndex(t => t.id === task.id);
+                if (index !== -1) {
+                    tasks[index] = task;
+                }
+            } else {
+                // Add new task
+                task.id = generateUniqueId();
+                task.completed = false;
+                tasks.push(task);
+            }
+            // Sort tasks by start time
+            tasks.sort((a, b) => a.startTime.localeCompare(b.startTime));
+            saveDailyTasks(currentSelectedDate, tasks);
+            renderDailyRoutine(currentSelectedDate);
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('Are you sure you want to delete this task?')) {
+                let tasks = getDailyTasks(currentSelectedDate);
+                tasks = tasks.filter(task => task.id !== taskId);
+                saveDailyTasks(currentSelectedDate, tasks);
+                renderDailyRoutine(currentSelectedDate);
+            }
+        }
+
+        function toggleTaskCompletion(taskId) {
+            let tasks = getDailyTasks(currentSelectedDate);
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                saveDailyTasks(currentSelectedDate, tasks);
+                renderDailyRoutine(currentSelectedDate);
+            }
+        }
+
+        function renderDailyRoutine(date) {
+            currentDateDisplay.textContent = formatDisplayDate(date);
+            currentDayRoutineDate.textContent = formatDisplayDate(date); // Update span inside daily-timeline-column
+            dailyTimeline.innerHTML = ''; // Clear previous tasks
+
+            const tasks = getDailyTasks(date);
+            const now = new Date();
+            const currentHour = now.getHours();
+            const todayFormatted = formatDate(now);
+            const selectedDateFormatted = formatDate(date);
+
+            // Ensure appSettings are loaded before using defaultStart/End
+            if (!appSettings.defaultStart || !appSettings.defaultEnd) {
+                loadSettings(); // Re-load if somehow not available
+            }
+            const startHour = parseInt(appSettings.defaultStart.split(':')[0]);
+            const endHour = parseInt(appSettings.defaultEnd.split(':')[0]);
+
+            for (let hour = startHour; hour <= endHour; hour++) {
+                const hourString = String(hour).padStart(2, '0');
+                // const nextHourString = String(hour + 1).padStart(2, '0'); // Unused but good for clarity
+                const timeLabelDiv = document.createElement('div');
+                timeLabelDiv.classList.add('time-label');
+                timeLabelDiv.textContent = `${hourString}:00`;
+                dailyTimeline.appendChild(timeLabelDiv);
+
+                const timeSlotDiv = document.createElement('div');
+                timeSlotDiv.classList.add('time-slot');
+                if (selectedDateFormatted === todayFormatted && hour === currentHour) {
+                    timeSlotDiv.classList.add('current-hour');
+                }
+
+                const tasksInSlot = tasks.filter(task => {
+                    const taskStartHour = parseInt(task.startTime.split(':')[0]);
+                    const taskEndHour = parseInt(task.endTime.split(':')[0]);
+                    // A task falls into this hour slot if its start time is within the hour,
+                    // or if it spans across this hour (starts before and ends after this hour's start)
+                    // Or if it starts in this hour and ends later
+                    return (taskStartHour === hour) ||
+                           (taskStartHour < hour && taskEndHour > hour) ||
+                           (taskStartHour <= hour && taskEndHour > hour); // Task starts at or before this hour, and ends after this hour
+                });
+
+                tasksInSlot.forEach(task => {
+                    const taskBlock = document.createElement('div');
+                    taskBlock.classList.add('task-block');
+                    if (task.completed) {
+                        taskBlock.classList.add('completed');
+                    }
+                    taskBlock.dataset.id = task.id; // Store task ID for actions
+
+                    const taskTitle = document.createElement('div');
+                    taskTitle.classList.add('task-title');
+                    taskTitle.textContent = task.title;
+
+                    const taskMeta = document.createElement('div');
+                    taskMeta.classList.add('task-meta');
+                    taskMeta.innerHTML = `<i class="far fa-clock"></i> ${formatDisplayTime(task.startTime)} - ${formatDisplayTime(task.endTime)}`;
+
+                    if (task.tags && task.tags.length > 0) {
+                        const taskTags = document.createElement('div');
+                        taskTags.classList.add('task-tags');
+                        task.tags.forEach(tag => {
+                            const span = document.createElement('span');
+                            span.textContent = tag.trim();
+                            taskTags.appendChild(span);
+                        });
+                        taskMeta.appendChild(taskTags);
+                    }
+
+                    const taskActions = document.createElement('div');
+                    taskActions.classList.add('task-actions');
+
+                    const completeBtn = document.createElement('button');
+                    completeBtn.classList.add('complete-btn');
+                    completeBtn.innerHTML = task.completed ? '<i class="fas fa-undo"></i>' : '<i class="fas fa-check"></i>';
+                    completeBtn.title = task.completed ? 'Mark as Incomplete' : 'Mark as Completed';
+                    completeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent opening modal
+                        toggleTaskCompletion(task.id);
+                    });
+
+                    const editBtn = document.createElement('button');
+                    editBtn.classList.add('edit-btn');
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.title = 'Edit Task';
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent opening modal
+                        openTaskModalForEdit(task);
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.classList.add('delete-btn');
+                    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+                    deleteBtn.title = 'Delete Task';
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent opening modal
+                        deleteTask(task.id);
+                    });
+
+                    taskActions.appendChild(completeBtn);
+                    taskActions.appendChild(editBtn);
+                    taskActions.appendChild(deleteBtn);
+
+                    taskBlock.appendChild(taskTitle);
+                    taskBlock.appendChild(taskMeta);
+                    taskBlock.appendChild(taskActions);
+                    timeSlotDiv.appendChild(taskBlock);
+                });
+
+                dailyTimeline.appendChild(timeSlotDiv);
+            }
+        }
+
+        // --- Daily Notes Functions ---
+        function loadDailyNotes(date) {
+            const notes = getData(storageKeys.notes(date));
+            dailyNotesTextarea.value = notes || '';
+        }
+
+        function saveDailyNotes() {
+            saveData(storageKeys.notes(currentSelectedDate), dailyNotesTextarea.value);
+            alert('Daily notes saved!');
+        }
+
+        // --- Weekly Overview Functions ---
+        function renderWeeklyOverview() {
+            weeklyOverviewGrid.innerHTML = '';
+            const today = new Date();
+            const startOfWeek = new Date(currentSelectedDate);
+            startOfWeek.setDate(currentSelectedDate.getDate() - currentSelectedDate.getDay()); // Sunday as start of week
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+
+                const dayCard = document.createElement('div');
+                dayCard.classList.add('week-day-card');
+                if (formatDate(day) === formatDate(today)) {
+                    dayCard.classList.add('current-day');
+                }
+                dayCard.dataset.date = formatDate(day);
+                dayCard.addEventListener('click', () => {
+                    currentSelectedDate = day;
+                    navigateTo('today');
+                });
+
+                const dayName = day.toLocaleDateString('en-US', { weekday: 'short' });
+                const dayNumber = day.getDate();
+                const monthName = day.toLocaleDateString('en-US', { month: 'short' });
+
+                dayCard.innerHTML = `
+                    <h4>${dayName}, ${dayNumber} ${monthName}</h4>
+                    <p>Tasks: ${getDailyTasks(day).length}</p>
+                    <ul>
+                        ${getDailyTasks(day).map(task => `<li>${task.title}</li>`).join('')}
+                    </ul>
+                `;
+                weeklyOverviewGrid.appendChild(dayCard);
+            }
+        }
+
+        // --- Calendar View Functions ---
+        function renderCalendar(date) {
+            currentMonthYearDisplay.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            calendarGrid.innerHTML = '';
+
+            const today = new Date();
+            const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+            const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday
+
+            // Add day names
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(name => {
+                const div = document.createElement('div');
+                div.classList.add('day-name');
+                div.textContent = name;
+                calendarGrid.appendChild(div);
+            });
+
+            // Add empty cells for days before the 1st
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                calendarGrid.appendChild(document.createElement('div'));
+            }
+
+            // Add day cells
+            for (let dayNum = 1; dayNum <= daysInMonth; dayNum++) {
+                const currentDay = new Date(date.getFullYear(), date.getMonth(), dayNum);
+                const dayCell = document.createElement('div');
+                dayCell.classList.add('day-cell');
+                dayCell.dataset.date = formatDate(currentDay);
+                dayCell.addEventListener('click', () => {
+                    currentSelectedDate = currentDay;
+                    navigateTo('today');
+                });
+
+                if (formatDate(currentDay) === formatDate(today)) {
+                    dayCell.classList.add('current-day');
+                }
+
+                const tasksForDay = getDailyTasks(currentDay);
+                let taskSummaryHTML = '';
+                if (tasksForDay.length > 0) {
+                    dayCell.classList.add('has-tasks');
+                    taskSummaryHTML = `<div class="task-summary">${tasksForDay.length} task(s)</div>`;
+                    const completedTasks = tasksForDay.filter(t => t.completed).length;
+                    if (completedTasks > 0) {
+                        taskSummaryHTML += `<div class="task-summary">${completedTasks} completed</div>`;
+                    }
+                }
+
+                dayCell.innerHTML = `<div class="day-number">${dayNum}</div>${taskSummaryHTML}`;
+                calendarGrid.appendChild(dayCell);
+            }
+        }
+
+        // --- All Notes Functions ---
+        function getAllGeneralNotes() {
+            return getData(storageKeys.generalNotes) || [];
+        }
+
+        function saveGeneralNote(content) {
+            const notes = getAllGeneralNotes();
+            notes.push({
+                id: generateUniqueId(),
+                date: formatDate(new Date()),
+                content: content
+            });
+            saveData(storageKeys.generalNotes, notes);
+            renderAllNotes(); // Re-render the list
+            newGeneralNoteTextarea.value = ''; // Clear textarea
+            alert('General note added!');
+        }
+
+        function renderAllNotes() {
+            allNotesList.innerHTML = '';
+            const generalNotes = getAllGeneralNotes();
+            if (generalNotes.length === 0) {
+                allNotesList.innerHTML = '<p>No general notes saved yet.</p>';
+                return;
+            }
+            generalNotes.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort newest first
+
+            generalNotes.forEach(note => {
+                const noteItem = document.createElement('div');
+                noteItem.classList.add('note-item');
+                noteItem.innerHTML = `
+                    <h3>Note on ${formatDisplayDate(new Date(note.date))}</h3>
+                    <p>${note.content}</p>
+                    <div class="note-date">ID: ${note.id}</div>
+                `;
+                allNotesList.appendChild(noteItem);
+            });
+        }
+
+
+        // --- Modals Logic ---
+
+        function openTaskModal(task = null) {
+            taskModalOverlay.style.display = 'flex'; // Set display to flex to show
+            editingTask = task;
+
+            if (task) {
+                taskModalTitle.textContent = 'Edit Task';
+                taskTitleInput.value = task.title;
+                taskStartTimeInput.value = task.startTime;
+                taskEndTimeInput.value = task.endTime;
+                taskTagsInput.value = task.tags ? task.tags.join(', ') : '';
+            } else {
+                taskModalTitle.textContent = 'Add New Task';
+                taskTitleInput.value = '';
+                taskStartTimeInput.value = appSettings.defaultStart;
+                taskEndTimeInput.value = appSettings.defaultEnd;
+                taskTagsInput.value = '';
+            }
+        }
+
+        function closeTaskModal() {
+            taskModalOverlay.style.display = 'none';
+            editingTask = null; // Clear editing state
+        }
+
+        function handleSaveTask() {
+            const title = taskTitleInput.value.trim();
+            const startTime = taskStartTimeInput.value;
+            const endTime = taskEndTimeInput.value;
+            const tags = taskTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+
+            if (!title || !startTime || !endTime) {
+                alert('Please fill in task title, start time, and end time.');
+                return;
+            }
+
+            const newTask = {
+                id: editingTask ? editingTask.id : null, // Preserve ID if editing
+                title,
+                startTime,
+                endTime,
+                tags,
+                completed: editingTask ? editingTask.completed : false // Preserve completion status
+            };
+
+            addOrUpdateTask(newTask);
+            closeTaskModal();
+        }
+
+        function openTemplateModal() {
+            templateModalOverlay.style.display = 'flex'; // Set display to flex to show
+            templateSelect.value = ''; // Reset selection
+        }
+
+        function closeTemplateModal() {
+            templateModalOverlay.style.display = 'none';
+        }
+
+        function loadTasksFromTemplate() {
+            const selectedTemplate = templateSelect.value;
+            let templateTasks = [];
+
+            switch (selectedTemplate) {
+                case 'morningRoutine':
+                    templateTasks = [
+                        { title: 'Wake up & Hydrate', startTime: '06:00', endTime: '06:15', tags: ['Health'] },
+                        { title: 'Morning Exercise', startTime: '06:15', endTime: '07:00', tags: ['Health', 'Fitness'] },
+                        { title: 'Shower & Get Ready', startTime: '07:00', endTime: '07:30', tags: ['Personal'] },
+                        { title: 'Breakfast & Coffee', startTime: '07:30', endTime: '08:00', tags: ['Personal'] },
+                    ];
+                    break;
+                case 'workdaySetup':
+                    templateTasks = [
+                        { title: 'Check Emails & Calendar', startTime: '09:00', endTime: '09:30', tags: ['Work'] },
+                        { title: 'Daily Stand-up Meeting', startTime: '09:30', endTime: '10:00', tags: ['Work', 'Meeting'] },
+                        { title: 'Focus Work Block 1', startTime: '10:00', endTime: '12:00', tags: ['Work', 'Deep Work'] },
+                    ];
+                    break;
+                case 'eveningWindDown':
+                    templateTasks = [
+                        { title: 'Dinner Preparation', startTime: '19:00', endTime: '19:30', tags: ['Home'] },
+                        { title: 'Read Book / Relax', startTime: '20:00', endTime: '21:00', tags: ['Leisure'] },
+                        { title: 'Prepare for Tomorrow', startTime: '21:00', endTime: '21:30', tags: ['Planning'] },
+                        { title: 'Bedtime Routine', startTime: '21:30', endTime: '22:00', tags: ['Personal'] },
+                    ];
+                    break;
+                case 'studySession':
+                    templateTasks = [
+                        { title: 'Review Notes', startTime: '14:00', endTime: '14:30', tags: ['Study'] },
+                        { title: 'Work on Assignment', startTime: '14:30', endTime: '16:00', tags: ['Study'] },
+                        { title: 'Short Break', startTime: '16:00', endTime: '16:15', tags: ['Break'] },
+                        { title: 'Practice Problems', startTime: '16:15', endTime: '17:00', tags: ['Study'] },
+                    ];
+                    break;
+                default:
+                    alert('Please select a template.');
+                    return;
+            }
+
+            const existingTasks = getDailyTasks(currentSelectedDate);
+            const newTasks = templateTasks.map(task => ({
+                ...task,
+                id: generateUniqueId(), // Assign new unique IDs
+                completed: false
+            }));
+
+            // Merge and re-sort
+            const combinedTasks = [...existingTasks, ...newTasks];
+            combinedTasks.sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+            saveDailyTasks(currentSelectedDate, combinedTasks);
+            renderDailyRoutine(currentSelectedDate);
+            closeTemplateModal();
+            alert(`Template "${templateSelect.options[templateSelect.selectedIndex].text}" loaded!`);
+        }
+
+        // Helper to open task modal with existing task data for editing
+        function openTaskModalForEdit(task) {
+            openTaskModal(task);
+        }
+
+        // --- Event Listeners ---
+
+        // Theme Toggle
+        themeToggle.addEventListener('click', () => {
+            const newTheme = htmlBody.classList.contains('dark-mode') ? 'light' : 'dark';
+            themeSelect.value = newTheme; // Update select dropdown
+            saveSettings(); // This will apply the theme
+        });
+
+        // Hamburger Menu (Mobile)
+        hamburgerMenu.addEventListener('click', () => {
+            mobileNavDrawer.classList.add('open');
+        });
+        closeNavDrawerBtn.addEventListener('click', () => {
+            mobileNavDrawer.classList.remove('open');
+        });
+
+        // Date Navigation
+        prevDayBtn.addEventListener('click', () => {
+            currentSelectedDate.setDate(currentSelectedDate.getDate() - 1);
+            renderDailyRoutine(currentSelectedDate);
+            loadDailyNotes(currentSelectedDate);
+        });
+        nextDayBtn.addEventListener('click', () => {
+            currentSelectedDate.setDate(currentSelectedDate.getDate() + 1);
+            renderDailyRoutine(currentSelectedDate);
+            loadDailyNotes(currentSelectedDate);
+        });
+
+        // Today Button
+        todayDateBtn.addEventListener('click', () => {
+            currentSelectedDate = new Date(); // Reset to today's date
+            renderDailyRoutine(currentSelectedDate);
+            loadDailyNotes(currentSelectedDate);
+        });
+
+        // View Selector
+        dayViewBtn.addEventListener('click', () => navigateTo('today'));
+        weekViewBtn.addEventListener('click', () => navigateTo('week'));
+        calendarViewBtn.addEventListener('click', () => navigateTo('calendar'));
+
+        // Daily Notes
+        saveDailyNotesBtn.addEventListener('click', saveDailyNotes);
+
+        // Calendar Navigation
+        prevMonthBtn.addEventListener('click', () => {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() - 1);
+            renderCalendar(currentCalendarMonth);
+        });
+        nextMonthBtn.addEventListener('click', () => {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + 1);
+            renderCalendar(currentCalendarMonth);
+        });
+
+        // General Notes
+        saveGeneralNoteBtn.addEventListener('click', () => {
+            const content = newGeneralNoteTextarea.value.trim();
+            if (content) {
+                saveGeneralNote(content);
+            } else {
+                alert('Note content cannot be empty.');
+            }
+        });
+
+        // Settings
+        themeSelect.addEventListener('change', saveSettings);
+        defaultStartTimeInput.addEventListener('change', saveSettings);
+        defaultEndTimeInput.addEventListener('change', saveSettings);
+        clearDataBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear ALL app data? This cannot be undone.')) {
+                localStorage.clear();
+                alert('All app data cleared. App will now reload.');
+                location.reload(); // Reload to reset state
+            }
+        });
+
+        // Floating Action Buttons
+        quickAddTaskBtn.addEventListener('click', () => openTaskModal());
+        quickAddTemplateBtn.addEventListener('click', () => openTemplateModal());
+
+        // Task Modal
+        closeTaskModalBtn.addEventListener('click', closeTaskModal);
+        cancelTaskModalBtn.addEventListener('click', closeTaskModal);
+        saveTaskBtn.addEventListener('click', handleSaveTask);
+
+        // Template Modal
+        closeTemplateModalBtn.addEventListener('click', closeTemplateModal);
+        cancelTemplateModalBtn.addEventListener('click', closeTemplateModal);
+        loadTemplateBtn.addEventListener('click', loadTasksFromTemplate);
+
+        // Close modals on outside click
+        taskModalOverlay.addEventListener('click', (e) => {
+            if (e.target === taskModalOverlay) {
+                closeTaskModal();
+            }
+        });
+        templateModalOverlay.addEventListener('click', (e) => {
+            if (e.target === templateModalOverlay) {
+                closeTemplateModal();
+            }
+        });
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings(); // Load user settings first
+            navigateTo('today'); // Load the default view, which will render daily routine and notes for today
+        });
+
+    </script>
+</body>
+</html>
